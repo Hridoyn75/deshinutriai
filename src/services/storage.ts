@@ -1,10 +1,9 @@
-import { UserProfile, FoodSuggestions, CalorieLogItem, GeminiSettings } from "@/types";
+import { UserProfile, FoodSuggestions, CalorieLogItem } from "@/types";
 
 const KEYS = {
   USER_PROFILE: "userProfile",
   FOOD_SUGGESTIONS: "foodSuggestions",
   CALORIE_LOGS: "calorieLogs",
-  GEMINI_SETTINGS: "geminiSettings",
 };
 
 // User Profile
@@ -46,16 +45,6 @@ export const saveCalorieLog = (log: CalorieLogItem): void => {
 export const deleteCalorieLog = (id: string): void => {
   const logs = getCalorieLogs().filter(log => log.id !== id);
   localStorage.setItem(KEYS.CALORIE_LOGS, JSON.stringify(logs));
-};
-
-// Gemini Settings
-export const getGeminiSettings = (): GeminiSettings | null => {
-  const data = localStorage.getItem(KEYS.GEMINI_SETTINGS);
-  return data ? JSON.parse(data) : null;
-};
-
-export const saveGeminiSettings = (settings: GeminiSettings): void => {
-  localStorage.setItem(KEYS.GEMINI_SETTINGS, JSON.stringify(settings));
 };
 
 // Analytics helpers

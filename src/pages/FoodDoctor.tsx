@@ -7,7 +7,6 @@ import {
   getFoodSuggestions,
   saveFoodSuggestions,
   getUserProfile,
-  getGeminiSettings,
 } from "@/services/storage";
 import { generateFoodSuggestions } from "@/services/gemini";
 import { FoodSuggestions } from "@/types";
@@ -18,17 +17,12 @@ import {
   ThumbsDown,
   Wallet,
   Utensils,
-  AlertCircle,
-  Settings,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const FoodDoctor = () => {
-  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState<FoodSuggestions | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = getFoodSuggestions();
@@ -40,12 +34,6 @@ const FoodDoctor = () => {
   }, []);
 
   const fetchSuggestions = async () => {
-    const settings = getGeminiSettings();
-    if (!settings?.apiKey) {
-      setError("Please set your Gemini API key in settings first");
-      return;
-    }
-
     const profile = getUserProfile();
     if (!profile) {
       toast({
@@ -57,7 +45,6 @@ const FoodDoctor = () => {
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       const result = await generateFoodSuggestions(profile);
@@ -69,7 +56,6 @@ const FoodDoctor = () => {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to generate suggestions";
-      setError(message);
       toast({
         title: "Error",
         description: message,
@@ -88,30 +74,18 @@ const FoodDoctor = () => {
     );
   }
 
-  if (error || !suggestions) {
+  if (!suggestions) {
     return (
       <PageContainer title="Food Doctor">
         <Card className="animate-fade-in">
           <CardContent className="p-6 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-destructive/10 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <h3 className="font-bold text-lg mb-2">Setup Required</h3>
             <p className="text-muted-foreground mb-4">
-              {error || "Please set up your Gemini API key to get personalized recommendations"}
+              Loading your personalized recommendations...
             </p>
-            <div className="flex flex-col gap-3">
-              <Button onClick={() => navigate("/settings")}>
-                <Settings className="w-4 h-4 mr-2" />
-                Go to Settings
-              </Button>
-              {suggestions === null && getGeminiSettings()?.apiKey && (
-                <Button variant="outline" onClick={fetchSuggestions}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Generate Recommendations
-                </Button>
-              )}
-            </div>
+            <Button onClick={fetchSuggestions}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Generate Recommendations
+            </Button>
           </CardContent>
         </Card>
       </PageContainer>
