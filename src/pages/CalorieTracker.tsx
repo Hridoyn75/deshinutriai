@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageContainer } from "@/components/PageContainer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -9,17 +9,14 @@ import {
   saveCalorieLog,
   deleteCalorieLog,
   getTodayCalories,
-  getGeminiSettings,
 } from "@/services/storage";
 import { estimateCalories } from "@/services/gemini";
 import { CalorieLogItem } from "@/types";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Flame, Clock, AlertCircle, Settings } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Plus, Trash2, Flame, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CalorieTracker = () => {
-  const navigate = useNavigate();
   const [foodInput, setFoodInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<CalorieLogItem[]>([]);
@@ -31,7 +28,6 @@ const CalorieTracker = () => {
 
   const refreshLogs = () => {
     const allLogs = getCalorieLogs();
-    // Sort by date descending and get today's logs
     const today = new Date().toISOString().split("T")[0];
     const todayLogs = allLogs
       .filter((log) => log.date.split("T")[0] === today)
@@ -45,16 +41,6 @@ const CalorieTracker = () => {
       toast({
         title: "Please enter food",
         description: "Type what you ate to track calories",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const settings = getGeminiSettings();
-    if (!settings?.apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please set your Gemini API key in settings",
         variant: "destructive",
       });
       return;
@@ -98,8 +84,6 @@ const CalorieTracker = () => {
     });
   };
 
-  const hasApiKey = getGeminiSettings()?.apiKey;
-
   return (
     <PageContainer title="Calorie Tracker">
       <div className="space-y-4">
@@ -124,46 +108,29 @@ const CalorieTracker = () => {
         </Card>
 
         {/* Input Section */}
-        {!hasApiKey ? (
-          <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
-            <CardContent className="p-5 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-muted flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Set up your Gemini API key to start tracking
-              </p>
-              <Button size="sm" onClick={() => navigate("/settings")}>
-                <Settings className="w-4 h-4 mr-2" />
-                Go to Settings
+        <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <CardContent className="p-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g., 2 eggs and toast with butter"
+                value={foodInput}
+                onChange={(e) => setFoodInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddFood()}
+                disabled={loading}
+              />
+              <Button onClick={handleAddFood} disabled={loading} size="icon">
+                {loading ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <Plus className="w-5 h-5" />
+                )}
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g., 2 eggs and toast with butter"
-                  value={foodInput}
-                  onChange={(e) => setFoodInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddFood()}
-                  disabled={loading}
-                />
-                <Button onClick={handleAddFood} disabled={loading} size="icon">
-                  {loading ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <Plus className="w-5 h-5" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Describe your food naturally — AI will estimate the calories
-              </p>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Describe your food naturally — AI will estimate the calories
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Food Logs */}
         <div className="space-y-3">

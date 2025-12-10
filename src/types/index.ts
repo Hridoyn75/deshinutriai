@@ -31,6 +31,3 @@ export interface CalorieLogItem {
   date: string;
 }
 
-export interface GeminiSettings {
-  apiKey: string;
-}
