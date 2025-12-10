@@ -1,40 +1,33 @@
 import { UserProfile, FoodSuggestions } from "@/types";
-import { getGeminiSettings } from "./storage";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const TOGETHER_API_URL = "https://api.together.xyz/v1/chat/completions";
+const TOGETHER_API_KEY = "211c53a3407212cfb88119ea0fe08901d4e6eb8613802057c1de21d9ec7a1693";
+const MODEL = "ServiceNow-AI/Apriel-1.5-15b-Thinker";
 
-const callGemini = async (prompt: string): Promise<string> => {
-  const settings = getGeminiSettings();
-  
-  if (!settings?.apiKey) {
-    throw new Error("Please set your Gemini API key in settings");
-  }
-
-  const response = await fetch(`${GEMINI_API_URL}?key=${settings.apiKey}`, {
+const callTogetherAI = async (prompt: string): Promise<string> => {
+  const response = await fetch(TOGETHER_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${TOGETHER_API_KEY}`,
     },
     body: JSON.stringify({
-      contents: [
-        {
-          parts: [{ text: prompt }],
-        },
+      model: MODEL,
+      messages: [
+        { role: "user", content: prompt }
       ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      },
+      temperature: 0.7,
+      max_tokens: 2048,
     }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || "Failed to call Gemini API");
+    throw new Error(error.error?.message || "Failed to call AI API");
   }
 
   const data = await response.json();
-  return data.candidates[0]?.content?.parts[0]?.text || "";
+  return data.choices[0]?.message?.content || "";
 };
 
 const extractJSON = (text: string): string => {
@@ -72,7 +65,7 @@ Please respond with ONLY a valid JSON object (no markdown, no explanation) in th
   }
 }`;
 
-  const response = await callGemini(prompt);
+  const response = await callTogetherAI(prompt);
   const jsonStr = extractJSON(response);
   
   try {
@@ -102,7 +95,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation) in this exac
 
 Be reasonable with portion sizes. If no portion is specified, assume a typical serving size.`;
 
-  const response = await callGemini(prompt);
+  const response = await callTogetherAI(prompt);
   const jsonStr = extractJSON(response);
   
   try {

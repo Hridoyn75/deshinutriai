@@ -1,50 +1,17 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContainer } from "@/components/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  getGeminiSettings,
-  saveGeminiSettings,
   getUserProfile,
   clearAllData,
 } from "@/services/storage";
 import { toast } from "@/hooks/use-toast";
-import { Key, User, Trash2, ExternalLink, CheckCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { User, Trash2 } from "lucide-react";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const [apiKey, setApiKey] = useState("");
-  const [hasKey, setHasKey] = useState(false);
   const profile = getUserProfile();
-
-  useEffect(() => {
-    const settings = getGeminiSettings();
-    if (settings?.apiKey) {
-      setApiKey(settings.apiKey);
-      setHasKey(true);
-    }
-  }, []);
-
-  const handleSaveApiKey = () => {
-    if (!apiKey.trim()) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Gemini API key",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    saveGeminiSettings({ apiKey: apiKey.trim() });
-    setHasKey(true);
-    toast({
-      title: "API Key Saved! ✓",
-      description: "You can now use AI-powered features",
-    });
-  };
 
   const handleClearData = () => {
     if (confirm("Are you sure you want to delete all data? This cannot be undone.")) {
@@ -60,44 +27,9 @@ const Settings = () => {
   return (
     <PageContainer title="Settings">
       <div className="space-y-4">
-        {/* API Key Section */}
-        <Card className="animate-slide-up">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <Key className="w-4 h-4 text-primary" />
-              </div>
-              Gemini API Key
-              {hasKey && (
-                <CheckCircle className="w-4 h-4 text-primary ml-auto" />
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-3">
-            <Input
-              type="password"
-              placeholder="Enter your API key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <Button onClick={handleSaveApiKey} className="w-full">
-              Save API Key
-            </Button>
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 text-sm text-primary hover:underline"
-            >
-              Get your free API key
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </CardContent>
-        </Card>
-
         {/* Profile Section */}
         {profile && (
-          <Card className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <Card className="animate-slide-up">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <div className="p-2 rounded-xl bg-accent">
@@ -136,7 +68,7 @@ const Settings = () => {
         )}
 
         {/* Danger Zone */}
-        <Card className="animate-slide-up border-destructive/30" style={{ animationDelay: "0.2s" }}>
+        <Card className="animate-slide-up border-destructive/30" style={{ animationDelay: "0.1s" }}>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-destructive">
               <div className="p-2 rounded-xl bg-destructive/10">
@@ -156,7 +88,7 @@ const Settings = () => {
         </Card>
 
         {/* About */}
-        <Card className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
+        <Card className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
           <CardContent className="p-4 text-center">
             <p className="text-sm text-muted-foreground">
               NutriTrack v1.0
